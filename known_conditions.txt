@@ -1,0 +1,6 @@
+Clouds
+Snow
+Clear
+Rain
+City
+Fireplace
