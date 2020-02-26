@@ -4,3 +4,4 @@ Clear
 Rain
 City
 Fireplace
+Cafe

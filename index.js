@@ -7,22 +7,31 @@ const remote = require("electron").remote;
 const settings = require("electron-settings");
 const { Tray, Menu } = remote;
 
-let userDataFile = require("./user_settings.json");
-
 //API STUFF---
 let key = "4685baf849484b0fc10163ba4e489b75";
-let cityName = "Sydney,CA";
+let cityName = "New York";
 let apiLink;
 let geoKey = "4yE4HHZPIeBZBTWeWp0zQCZHp2XUpBWK";
 let currentCity;
-let geoAPILink = `http://www.mapquestapi.com/geocoding/v1/address?key=${geoKey}&location=Boulder`;
+let geoAPILink = `http://www.mapquestapi.com/geocoding/v1/address?key=${geoKey}&location="New York"`;
 //------------
 //`http://www.mapquestapi.com/geocoding/v1/address?key=${geoKey}&location=${currentCity}`
+
+//User Data---
+let userDataFile = require("./user_settings.json");
+let userSettings;
+let defaultSettings = {
+  autoplay: true,
+  cityname: `${cityName}`,
+  refresh: 600000
+};
+
 //Page Elements---
 let currentWindow = remote.getCurrentWindow();
 let optBtn = document.getElementById("optBtn");
 let optMenu = document.getElementById("optMenu");
 let autoplayCheck = document.getElementById("autoplay");
+let autoSaveBtn = document.getElementById("autoplaySaveBtn");
 let minBtn = document.getElementById("minBtn");
 let maxBtn = document.getElementById("maxBtn");
 let closeBtn = document.getElementById("closeBtn");
@@ -41,12 +50,17 @@ let feelsText = document.getElementById("currentFeelslike");
 let currentLocationText = document.getElementById("currentLocation");
 let cityNameSaveBtn = document.getElementById("citySaveBtn");
 let cityNameInput = document.getElementById("cityNameInput");
-
 let soundSelection = document.querySelectorAll("#soundSelection");
-console.log(soundSelection);
+let intervalSaveBtn = document.getElementById("intervalSaveBtn");
+let intervalTimeSelection = document.getElementById("intervalTime");
+
+//Default the refresh interval to 10 minutes
+intervalTimeSelection.value = 10;
+//Add the onclick function to each sound selection
 soundSelection.forEach(clickableSounds);
 //------------
 
+//Misc Variables...
 let currentWeather;
 let currentTemp;
 let currentFeels;
@@ -56,12 +70,15 @@ let currentLon;
 let prevWeather;
 let prevLat;
 let prevLon;
-let isAuto = true;
+let isAuto;
 let isPlaying = document.getElementById("autoplay").checked;
+//------------
 
+//Load user settings...NOT WORKING !!!
+console.log(defaultSettings);
 loadSettings();
 
-/*Tray Stuff*/
+//Tray Stuff...
 let trayIcon = new Tray(path.join("", "./WeatherOrNotIcon.ico"));
 const trayMenuTemplate = [
   {
@@ -97,6 +114,7 @@ let clearSound = "./audio/Birds_Clear.wav";
 let rainSound = "./audio/Light_Rain.wav";
 let citySound = "./audio/Busy_City.wav";
 let fireSound = "./audio/Warm_Fireplace.wav";
+let coffeeSound = "./audio/Crowded_Coffeeshop.wav";
 //------------
 
 //Video Sources
@@ -106,17 +124,12 @@ let clearBG = "./video/clear.mp4";
 let rainBG = "./video/rain.mp4";
 let cityBG = "./video/city.mp4";
 let fireBG = "./video/fireplace.mp4";
+let coffeeBG = "./video/coffee.mp4";
 //------------
 
 //Default at 10 minute intervals
 //600000
-let checkInterval = 300000;
-
-//Check every _ interval and update weather
-if (isAuto) {
-  requestGeo(cityName);
-  setInterval(requestWeather, checkInterval);
-}
+let checkInterval = minutesToMilli(intervalTimeSelection.value);
 
 //Initialize BG video
 videoSrc.setAttribute("src", cloudsBG);
@@ -181,12 +194,14 @@ optBtn.addEventListener("click", function() {
   optMenu.classList.toggle("closed");
 });
 
-autoplayCheck.addEventListener("onchange", function() {
+autoSaveBtn.addEventListener("click", function() {
   if (autoplayCheck.checked == true) {
     userSettings.autoplay = true;
   } else {
     userSettings.autoplay = false;
   }
+  console.log("Saved autosave setting.");
+  console.log("Autoplay is now: " + userSettings.autoplay);
   saveSettings(userSettings);
 });
 
@@ -229,6 +244,14 @@ cityNameSaveBtn.addEventListener("click", function() {
   currentCity = cityNameInput.value;
   console.log(currentCity);
   requestGeo(currentCity);
+  userSettings.cityname = currentCity;
+  saveSettings(userSettings);
+});
+intervalSaveBtn.addEventListener("click", function() {
+  checkInterval = minutesToMilli(intervalTimeSelection.value);
+  console.log("Updated interval refresh rate.");
+  userSettings.refresh = intervalTimeSelection.value * 60000;
+  saveSettings(userSettings);
 });
 //------------
 
@@ -245,7 +268,7 @@ function clickableSounds(item) {
       }
     } else {
       isAuto = false;
-      currentWeather = item.innerHTML;
+      // currentWeather = item.innerHTML;
       updateElements(item.innerHTML);
       console.log("Clicked " + item.innerHTML);
       if (isPlaying) {
@@ -346,6 +369,19 @@ function updateElements(currentWeather) {
         }
       });
       break;
+    case "Cafe":
+      videoSrc.setAttribute("src", coffeeBG);
+      bgVideo.load();
+      setTimeout(function() {
+        bgVideo.play();
+      }, 0);
+      sound = new Howl({
+        src: [coffeeSound],
+        onend: function() {
+          playAudio(currentWeather);
+        }
+      });
+      break;
 
     default:
       videoSrc.setAttribute("src", cloudsBG);
@@ -438,7 +474,7 @@ function logConditions(currentWeather) {
 //------------
 
 function saveSettings(jsonData) {
-  fs.writeFile("user_settings.json", jsonData, function(err) {
+  fs.writeFile("user_settings.json", JSON.stringify(jsonData), function(err) {
     if (err) {
       console.log(err);
     }
@@ -446,6 +482,25 @@ function saveSettings(jsonData) {
 }
 
 function loadSettings() {
-  let jsonData = JSON.parse(JSON.stringify(userDataFile));
-  userSettings = jsonData;
+  fs.readFile("user_settings.json", (err, data) => {
+    if (err) throw err;
+    let rawData = JSON.parse(data);
+    userSettings = rawData;
+    if (userSettings.autoplay == true) {
+      autoplayCheck.checked = true;
+    }
+    isAuto = userSettings.autoplay;
+    currentCity = userSettings.cityname;
+    checkInterval = userSettings.refresh;
+
+    //Check every _ interval and update weather
+    if (isAuto) {
+      requestGeo(currentCity);
+      setInterval(requestWeather, checkInterval);
+    }
+  });
+}
+
+function minutesToMilli(minutes) {
+  return minutes * 60000;
 }

@@ -41,16 +41,34 @@
         <br />
         <li id="soundSelection" class="soundItem">City</li>
         <li id="soundSelection" class="soundItem">Fireplace</li>
+        <li id="soundSelection" class="soundItem">Cafe</li>
       </ul>
     </div>
     <aside id="optMenu" class="optMenu closed">
       <ul class="optionsList">
-        <li class="optItem">Autoplay on start: <input type="checkbox" name="autoplay" id="autoplay"></li>
+        <li class="optItem">Autoplay on start: <input type="checkbox" name="autoplay" id="autoplay">
+        <button id="autoplaySaveBtn">
+          Apply
+        </button>
+      </li>
         <li class="optItem">
           City name: 
           <input type="text" name="address" id="cityNameInput" placeholder="New York,USA"> 
           <button id="citySaveBtn">
-            Save
+            Go
+          </button>
+        </li>
+        <li class="optItem">
+          Refresh every: 
+          <select id="intervalTime">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+          minutes.
+          <button id="intervalSaveBtn">
+            Apply
           </button>
         </li>
       </ul>
