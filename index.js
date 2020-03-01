@@ -115,6 +115,7 @@ let rainSound = "./audio/Light_Rain.wav";
 let citySound = "./audio/Busy_City.wav";
 let fireSound = "./audio/Warm_Fireplace.wav";
 let coffeeSound = "./audio/Crowded_Coffeeshop.wav";
+let mistSound = "./audio/Light_Mist.wav";
 //------------
 
 //Video Sources
@@ -125,6 +126,7 @@ let rainBG = "./video/rain.mp4";
 let cityBG = "./video/city.mp4";
 let fireBG = "./video/fireplace.mp4";
 let coffeeBG = "./video/coffee.mp4";
+let mistBG = "./video/mist.mp4";
 //------------
 
 //Default at 10 minute intervals
@@ -377,6 +379,20 @@ function updateElements(currentWeather) {
       }, 0);
       sound = new Howl({
         src: [coffeeSound],
+        onend: function() {
+          playAudio(currentWeather);
+        }
+      });
+      break;
+
+    case "Mist":
+      videoSrc.setAttribute("src", mistBG);
+      bgVideo.load();
+      setTimeout(function() {
+        bgVideo.play();
+      }, 0);
+      sound = new Howl({
+        src: [mistSound],
         onend: function() {
           playAudio(currentWeather);
         }
