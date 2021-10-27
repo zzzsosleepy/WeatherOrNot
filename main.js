@@ -15,7 +15,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true
     },
-    icon: "./WeatherOrNotIcon.ico",
+    icon: path.join(__dirname, "resources/app/WeatherOrNotIcon.ico"),
     minHeight: 300,
     minWidth: 600
   });

@@ -18,15 +18,37 @@ let geoAPILink = `http://www.mapquestapi.com/geocoding/v1/address?key=${geoKey}&
 //`http://www.mapquestapi.com/geocoding/v1/address?key=${geoKey}&location=${currentCity}`
 
 //User Data---
-let userDataFile = require("./user_settings.json");
+let userDataFile = require(path.join(__dirname, "user_settings.json"));
 let userSettings;
 let defaultSettings = {
   autoplay: true,
   cityname: `${cityName}`,
   refresh: 600000
 };
+//Weather Sounds
+let snowSound = "./audio/Light_Snow.wav";
+let cloudySound = "./audio/Breezy_Clouds.wav";
+let clearSound = "./audio/Birds_Clear.wav";
+let rainSound = "./audio/Light_Rain.wav";
+let citySound = "./audio/Busy_City.wav";
+let fireSound = "./audio/Warm_Fireplace.wav";
+let coffeeSound = "./audio/Crowded_Coffeeshop.wav";
+let mistSound = "./audio/Light_Mist.wav";
+//------------
+
+//Video Sources
+let snowBG = "./video/snow.mp4";
+let cloudsBG = "./video/clouds.mp4";
+let clearBG = "./video/clear.mp4";
+let rainBG = "./video/rain.mp4";
+let cityBG = "./video/city.mp4";
+let fireBG = "./video/fireplace.mp4";
+let coffeeBG = "./video/coffee.mp4";
+let mistBG = "./video/mist.mp4";
+//------------
 
 //Page Elements---
+let sound;
 let currentWindow = remote.getCurrentWindow();
 let optBtn = document.getElementById("optBtn");
 let optMenu = document.getElementById("optMenu");
@@ -72,14 +94,25 @@ let prevLat;
 let prevLon;
 let isAuto;
 let isPlaying = document.getElementById("autoplay").checked;
+let isPaused = false;
 //------------
 
+//Initialize BG video
+videoSrc.setAttribute("src", cloudsBG);
+bgVideo.appendChild(videoSrc);
+// bgVideo.load();
+
+let playPromise = bgVideo.play();
+
 //Load user settings...NOT WORKING !!!
+//Default at 10 minute intervals
+//600000
+let checkInterval = minutesToMilli(intervalTimeSelection.value);
 console.log(defaultSettings);
 loadSettings();
 
 //Tray Stuff...
-let trayIcon = new Tray(path.join("", "./WeatherOrNotIcon.ico"));
+let trayIcon = new Tray("resources/app/WeatherOrNotIcon.ico");
 const trayMenuTemplate = [
   {
     label: "WeatherOrNot",
@@ -104,42 +137,6 @@ let trayMenu = Menu.buildFromTemplate(trayMenuTemplate);
 trayIcon.setContextMenu(trayMenu);
 //------------
 
-let isPaused = false;
-
-//Weather Sounds
-let sound;
-let snowSound = "./audio/Light_Snow.wav";
-let cloudySound = "./audio/Breezy_Clouds.wav";
-let clearSound = "./audio/Birds_Clear.wav";
-let rainSound = "./audio/Light_Rain.wav";
-let citySound = "./audio/Busy_City.wav";
-let fireSound = "./audio/Warm_Fireplace.wav";
-let coffeeSound = "./audio/Crowded_Coffeeshop.wav";
-let mistSound = "./audio/Light_Mist.wav";
-//------------
-
-//Video Sources
-let snowBG = "./video/snow.mp4";
-let cloudsBG = "./video/clouds.mp4";
-let clearBG = "./video/clear.mp4";
-let rainBG = "./video/rain.mp4";
-let cityBG = "./video/city.mp4";
-let fireBG = "./video/fireplace.mp4";
-let coffeeBG = "./video/coffee.mp4";
-let mistBG = "./video/mist.mp4";
-//------------
-
-//Default at 10 minute intervals
-//600000
-let checkInterval = minutesToMilli(intervalTimeSelection.value);
-
-//Initialize BG video
-videoSrc.setAttribute("src", cloudsBG);
-bgVideo.appendChild(videoSrc);
-// bgVideo.load();
-setTimeout(function() {
-  bgVideo.play();
-}, 0);
 sound = new Howl({
   src: [cloudySound],
   onend: function() {
@@ -287,14 +284,14 @@ function updateElements(currentWeather) {
   if (sound !== undefined) {
     sound.stop();
   }
-  bgVideo.pause();
+  if (playPromise !== undefined) {
+    bgVideo.pause();
+  } else {
+    console.error("Looks like playPromise is undefined");
+  }
   switch (currentWeather) {
     case "Snow":
-      videoSrc.setAttribute("src", snowBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(snowBG);
       sound = new Howl({
         src: [snowSound],
         onend: function() {
@@ -304,11 +301,7 @@ function updateElements(currentWeather) {
       break;
 
     case "Clouds":
-      videoSrc.setAttribute("src", cloudsBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(cloudsBG);
       sound = new Howl({
         src: [cloudySound],
         onend: function() {
@@ -318,11 +311,7 @@ function updateElements(currentWeather) {
       break;
 
     case "Clear":
-      videoSrc.setAttribute("src", clearBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(clearBG);
       sound = new Howl({
         src: [clearSound],
         onend: function() {
@@ -332,11 +321,7 @@ function updateElements(currentWeather) {
       break;
 
     case "Rain":
-      videoSrc.setAttribute("src", rainBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(rainBG);
       sound = new Howl({
         src: [rainSound],
         onend: function() {
@@ -346,11 +331,7 @@ function updateElements(currentWeather) {
       break;
 
     case "City":
-      videoSrc.setAttribute("src", cityBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(cityBG);
       sound = new Howl({
         src: [citySound],
         onend: function() {
@@ -359,11 +340,7 @@ function updateElements(currentWeather) {
       });
       break;
     case "Fireplace":
-      videoSrc.setAttribute("src", fireBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(fireBG);
       sound = new Howl({
         src: [fireSound],
         onend: function() {
@@ -372,11 +349,7 @@ function updateElements(currentWeather) {
       });
       break;
     case "Cafe":
-      videoSrc.setAttribute("src", coffeeBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(coffeeBG);
       sound = new Howl({
         src: [coffeeSound],
         onend: function() {
@@ -386,11 +359,7 @@ function updateElements(currentWeather) {
       break;
 
     case "Mist":
-      videoSrc.setAttribute("src", mistBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(mistBG);
       sound = new Howl({
         src: [mistSound],
         onend: function() {
@@ -400,11 +369,7 @@ function updateElements(currentWeather) {
       break;
 
     default:
-      videoSrc.setAttribute("src", cloudsBG);
-      bgVideo.load();
-      setTimeout(function() {
-        bgVideo.play();
-      }, 0);
+      loadAndPlayVideo(cloudsBG);
       sound = new Howl({
         src: [cloudySound],
         onend: function() {
@@ -418,6 +383,14 @@ function updateElements(currentWeather) {
   logConditions(currentWeather);
 }
 //------------
+
+function loadAndPlayVideo(videoName) {
+  videoSrc.setAttribute("src", videoName);
+  bgVideo.load();
+  setTimeout(function() {
+    playPromise = bgVideo.play();
+  }, 1);
+}
 
 //Set the text to reflect the current weather
 function setWeatherText(
@@ -475,8 +448,10 @@ window.SetVolume = function(val) {
 
 //Log the known conditions to a text file
 function logConditions(currentWeather) {
-  let stream = fs.createWriteStream("known_conditions.txt", { flags: "a" });
-  let text = fs.readFileSync("known_conditions.txt", "utf8");
+  let stream = fs.createWriteStream("resources/app/known_conditions.txt", {
+    flags: "a"
+  });
+  let text = fs.readFileSync("resources/app/known_conditions.txt", "utf8");
   if (
     !text.includes(currentWeather) &&
     currentWeather !== undefined &&
@@ -490,15 +465,19 @@ function logConditions(currentWeather) {
 //------------
 
 function saveSettings(jsonData) {
-  fs.writeFile("user_settings.json", JSON.stringify(jsonData), function(err) {
-    if (err) {
-      console.log(err);
+  fs.writeFile(
+    "resources/app/user_settings.json",
+    JSON.stringify(jsonData),
+    function(err) {
+      if (err) {
+        console.log(err);
+      }
     }
-  });
+  );
 }
 
 function loadSettings() {
-  fs.readFile("user_settings.json", (err, data) => {
+  fs.readFile("resources/app/user_settings.json", (err, data) => {
     if (err) throw err;
     let rawData = JSON.parse(data);
     userSettings = rawData;
