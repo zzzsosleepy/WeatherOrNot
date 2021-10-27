@@ -20,7 +20,7 @@ function createWindow() {
     minHeight: 300,
     minWidth: 600
   });
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
   win.removeMenu();
 
   //***//
