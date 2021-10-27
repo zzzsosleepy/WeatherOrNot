@@ -112,7 +112,7 @@ console.log(defaultSettings);
 loadSettings();
 
 //Tray Stuff...
-let trayIcon = new Tray("resources/app/WeatherOrNotIcon.ico");
+let trayIcon = new Tray("./WeatherOrNotIcon.ico");
 const trayMenuTemplate = [
   {
     label: "WeatherOrNot",
@@ -121,14 +121,14 @@ const trayMenuTemplate = [
 
   {
     label: "Play",
-    click: function() {
+    click: function () {
       playAudio(currentWeather);
     }
   },
 
   {
     label: "Pause",
-    click: function() {
+    click: function () {
       pauseAudio();
     }
   }
@@ -139,7 +139,7 @@ trayIcon.setContextMenu(trayMenu);
 
 sound = new Howl({
   src: [cloudySound],
-  onend: function() {
+  onend: function () {
     playAudio(currentWeather);
   }
 });
@@ -152,7 +152,7 @@ sound = new Howl({
 //API request to get current weather using a placeholder location
 function requestGeo(address) {
   geoAPILink = `http://www.mapquestapi.com/geocoding/v1/address?key=${geoKey}&location=${address}`;
-  request(geoAPILink, function(err, response, body) {
+  request(geoAPILink, function (err, response, body) {
     console.log("Requesting geolocation...");
     console.log(geoAPILink);
     let jsonBody = JSON.parse(body);
@@ -170,7 +170,7 @@ function requestGeo(address) {
 //------------
 //API request to get current weather using a placeholder location
 function requestWeather() {
-  request(apiLink, function(err, response, body) {
+  request(apiLink, function (err, response, body) {
     console.log("Requesting weather...");
     console.log(apiLink);
     let jsonBody = JSON.parse(body);
@@ -189,11 +189,11 @@ function requestWeather() {
 //------------
 
 //Button Events
-optBtn.addEventListener("click", function() {
+optBtn.addEventListener("click", function () {
   optMenu.classList.toggle("closed");
 });
 
-autoSaveBtn.addEventListener("click", function() {
+autoSaveBtn.addEventListener("click", function () {
   if (autoplayCheck.checked == true) {
     userSettings.autoplay = true;
   } else {
@@ -204,11 +204,11 @@ autoSaveBtn.addEventListener("click", function() {
   saveSettings(userSettings);
 });
 
-minBtn.addEventListener("click", function() {
+minBtn.addEventListener("click", function () {
   currentWindow.minimize();
 });
 
-maxBtn.addEventListener("click", function() {
+maxBtn.addEventListener("click", function () {
   if (!currentWindow.isMaximized()) {
     currentWindow.maximize();
   } else {
@@ -216,37 +216,37 @@ maxBtn.addEventListener("click", function() {
   }
 });
 
-closeBtn.addEventListener("click", function() {
+closeBtn.addEventListener("click", function () {
   currentWindow.close();
 });
 
-closeOptBtn.addEventListener("click", function() {
+closeOptBtn.addEventListener("click", function () {
   optMenu.classList.toggle("closed");
 });
 
-playBtn.addEventListener("click", function() {
+playBtn.addEventListener("click", function () {
   playAudio(currentWeather);
 
   console.log("Button clicked");
 });
 
-pauseBtn.addEventListener("click", function() {
+pauseBtn.addEventListener("click", function () {
   pauseAudio();
 });
 
-soundMenuOpener.addEventListener("click", function() {
+soundMenuOpener.addEventListener("click", function () {
   soundMenu.classList.toggle("closed");
   soundMenuOpener.classList.toggle("closed");
 });
 
-cityNameSaveBtn.addEventListener("click", function() {
+cityNameSaveBtn.addEventListener("click", function () {
   currentCity = cityNameInput.value;
   console.log(currentCity);
   requestGeo(currentCity);
   userSettings.cityname = currentCity;
   saveSettings(userSettings);
 });
-intervalSaveBtn.addEventListener("click", function() {
+intervalSaveBtn.addEventListener("click", function () {
   checkInterval = minutesToMilli(intervalTimeSelection.value);
   console.log("Updated interval refresh rate.");
   userSettings.refresh = intervalTimeSelection.value * 60000;
@@ -256,7 +256,7 @@ intervalSaveBtn.addEventListener("click", function() {
 
 //Add list functionality
 function clickableSounds(item) {
-  item.addEventListener("click", function() {
+  item.addEventListener("click", function () {
     if (item.innerHTML == "Auto") {
       isAuto = true;
       currentWeather = prevWeather;
@@ -294,7 +294,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(snowBG);
       sound = new Howl({
         src: [snowSound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -304,7 +304,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(cloudsBG);
       sound = new Howl({
         src: [cloudySound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -314,7 +314,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(clearBG);
       sound = new Howl({
         src: [clearSound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -324,7 +324,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(rainBG);
       sound = new Howl({
         src: [rainSound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -334,7 +334,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(cityBG);
       sound = new Howl({
         src: [citySound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -343,7 +343,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(fireBG);
       sound = new Howl({
         src: [fireSound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -352,7 +352,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(coffeeBG);
       sound = new Howl({
         src: [coffeeSound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -362,7 +362,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(mistBG);
       sound = new Howl({
         src: [mistSound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -372,7 +372,7 @@ function updateElements(currentWeather) {
       loadAndPlayVideo(cloudsBG);
       sound = new Howl({
         src: [cloudySound],
-        onend: function() {
+        onend: function () {
           playAudio(currentWeather);
         }
       });
@@ -387,7 +387,7 @@ function updateElements(currentWeather) {
 function loadAndPlayVideo(videoName) {
   videoSrc.setAttribute("src", videoName);
   bgVideo.load();
-  setTimeout(function() {
+  setTimeout(function () {
     playPromise = bgVideo.play();
   }, 1);
 }
@@ -438,7 +438,7 @@ function pauseAudio() {
 //------------
 
 //Manage the volume via volume slider
-window.SetVolume = function(val) {
+window.SetVolume = function (val) {
   let player = sound;
   console.log("Before: " + player.volume);
   player.volume(val);
@@ -448,10 +448,10 @@ window.SetVolume = function(val) {
 
 //Log the known conditions to a text file
 function logConditions(currentWeather) {
-  let stream = fs.createWriteStream("resources/app/known_conditions.txt", {
+  let stream = fs.createWriteStream("./known_conditions.txt", {
     flags: "a"
   });
-  let text = fs.readFileSync("resources/app/known_conditions.txt", "utf8");
+  let text = fs.readFileSync("./known_conditions.txt", "utf8");
   if (
     !text.includes(currentWeather) &&
     currentWeather !== undefined &&
@@ -466,9 +466,9 @@ function logConditions(currentWeather) {
 
 function saveSettings(jsonData) {
   fs.writeFile(
-    "resources/app/user_settings.json",
+    "./user_settings.json",
     JSON.stringify(jsonData),
-    function(err) {
+    function (err) {
       if (err) {
         console.log(err);
       }
@@ -477,7 +477,7 @@ function saveSettings(jsonData) {
 }
 
 function loadSettings() {
-  fs.readFile("resources/app/user_settings.json", (err, data) => {
+  fs.readFile("./user_settings.json", (err, data) => {
     if (err) throw err;
     let rawData = JSON.parse(data);
     userSettings = rawData;

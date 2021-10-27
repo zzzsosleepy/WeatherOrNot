@@ -13,21 +13,22 @@ function createWindow() {
     show: false,
     frame: false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     },
-    icon: path.join(__dirname, "resources/app/WeatherOrNotIcon.ico"),
+    icon: path.join(__dirname, "./WeatherOrNotIcon.ico"),
     minHeight: 300,
     minWidth: 600
   });
-  //win.webContents.openDevTools();
+  win.webContents.openDevTools();
   win.removeMenu();
 
   //***//
-  globalShortcut.register("f5", function() {
+  globalShortcut.register("f5", function () {
     console.log("f5 is pressed");
     win.reload();
   });
-  globalShortcut.register("CommandOrControl+R", function() {
+  globalShortcut.register("CommandOrControl+R", function () {
     console.log("CommandOrControl+R is pressed");
     win.reload();
   });
